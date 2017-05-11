@@ -90,6 +90,7 @@ $(function initializeMap () {
   // dataset item instead:
   //
   //   $('button[data-action="add"]').click(
+  
   $('button.add').click(    
     evt =>
       $(evt.target.dataset.from)
@@ -108,6 +109,40 @@ $(function initializeMap () {
 
           // Add this item to our itinerary for the current day
           $('.current.day').append(li)
+
+          var bodyData;// = {activity: [], activities: [], hotel: []}
+          var currentArr = $('.current.day').text().slice(6).split(' x');
+
+          if(evt.target.id=== 'activities') {
+            bodyData = {activities: currentArr[currentArr.length-2]};
+
+            //push.bodyData[activities](NEW DATA HERE)
+          }
+          else if(evt.target.id=== 'restaurants'){
+            bodyData = {restaurants: currentArr[currentArr.length-2]};
+
+          }
+          else{
+            bodyData = {hotels: currentArr[currentArr.length-2]};
+          }
+          // //{values: $('.current.day').text().slice(6).split(' x')}
+
+          // push.bodyData[food](NEW DATA HERE)
+
+          /*
+          push.bodyData[food](NEW DATA HERE)
+          */
+          console.log(evt.target.id);
+
+          $.ajax({
+            method: 'PUT',
+            url: '/api/days/'+$('.current.day').text().slice(4,5),
+            data: bodyData
+          })
+          .then(function(data) {
+            console.log('updated')
+          })
+          .catch(console.error) 
         })
   )
 
@@ -163,11 +198,35 @@ $(function initializeMap () {
         $(prev || next).addClass('current')
       }
 
+
       $day.find('li').each((_i, li) => li.marker.setMap(currentMap))      
       $day.remove()
       numberDays()
-    })
+
+    $.ajax({
+      method: 'DELETE',
+      url: '/api/days/'+$day.text().slice(4,5)
+    }).then(function(data){
+      console.log('deleted');
+    }).catch(function(err){
+      console.log(err);
+    });
+
+  })
 
   // When we start, add a day
   $('button.addDay').click()
+
 });
+
+// $(function(){
+//   $.ajax({
+//     method: 'DELETE',
+//     url: '/api/days/delete/:num'
+//   }).then(function(data){
+//     console.log('delete');
+
+//   }).catch(function(err){
+//     console.log(err);
+//   });
+// })
