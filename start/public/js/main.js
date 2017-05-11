@@ -27,12 +27,12 @@ $(function initializeMap () {
       featureType: 'road.highway',
       elementType: 'geometry.fill',
       stylers: [{ color: '#ef8c25' }, { lightness: 40 }]
-    }, 
+    },
     {
       featureType: 'road.highway',
       elementType: 'geometry.stroke',
       stylers: [{ visibility: 'off' }]
-    }, 
+    },
     {
       featureType: 'poi.park',
       elementType: 'geometry.fill',
@@ -68,7 +68,19 @@ $(function initializeMap () {
   // 0. Fetch the database, parsed from json to a js object
   const db = fetch('/api').then(r => r.json())
 
-  // TODO: 
+  $.ajax({
+    method: 'GET',
+    url: '/api/days'
+  })
+  .then(function(data) {
+    data.forEach(function(day) {
+      var dayNum = 'day ' + day.number;
+      $('#itinerary-panel').append('<ol class ="day"><h3><span class="day-head">'+dayNum+'</span><button class="delDay">x</button></h3></ol>')
+    })
+  })
+  .catch(console.error);
+
+  // TODO:
   // 1. Populate the <select>s with <option>s
   $('select').each(
     (_index, select) => {
@@ -90,8 +102,8 @@ $(function initializeMap () {
   // dataset item instead:
   //
   //   $('button[data-action="add"]').click(
-  
-  $('button.add').click(    
+
+  $('button.add').click(
     evt =>
       $(evt.target.dataset.from)
         .find('option:selected')
@@ -115,8 +127,6 @@ $(function initializeMap () {
 
           if(evt.target.id=== 'activities') {
             bodyData = {activities: currentArr[currentArr.length-2]};
-
-            //push.bodyData[activities](NEW DATA HERE)
           }
           else if(evt.target.id=== 'restaurants'){
             bodyData = {restaurants: currentArr[currentArr.length-2]};
@@ -125,14 +135,7 @@ $(function initializeMap () {
           else{
             bodyData = {hotels: currentArr[currentArr.length-2]};
           }
-          // //{values: $('.current.day').text().slice(6).split(' x')}
 
-          // push.bodyData[food](NEW DATA HERE)
-
-          /*
-          push.bodyData[food](NEW DATA HERE)
-          */
-          console.log(evt.target.id);
 
           $.ajax({
             method: 'PUT',
@@ -142,7 +145,7 @@ $(function initializeMap () {
           .then(function(data) {
             console.log('updated')
           })
-          .catch(console.error) 
+          .catch(console.error)
         })
   )
 
@@ -159,7 +162,7 @@ $(function initializeMap () {
     evt => {
       // Deselect all days
       $('.day.current').removeClass('current')
-      
+
       // Add a new day
       $(evt.target).before(
         $(`<ol class="current day"><h3><span class=day-head></span><button class=delDay>x</button></h3></ol>`)
@@ -181,7 +184,7 @@ $(function initializeMap () {
       $('.day.current').removeClass('current')
       const $day = $(evt.target).closest('.day')
 
-      $('li').each((_i, li) => li.marker && li.marker.setMap(null))      
+      $('li').each((_i, li) => li.marker && li.marker.setMap(null))
       $day.addClass('current')
       $day.find('li').each((_i, li) => li.marker.setMap(currentMap))
     }
@@ -199,7 +202,7 @@ $(function initializeMap () {
       }
 
 
-      $day.find('li').each((_i, li) => li.marker.setMap(currentMap))      
+      $day.find('li').each((_i, li) => li.marker.setMap(currentMap))
       $day.remove()
       numberDays()
 
@@ -218,15 +221,3 @@ $(function initializeMap () {
   $('button.addDay').click()
 
 });
-
-// $(function(){
-//   $.ajax({
-//     method: 'DELETE',
-//     url: '/api/days/delete/:num'
-//   }).then(function(data){
-//     console.log('delete');
-
-//   }).catch(function(err){
-//     console.log(err);
-//   });
-// })

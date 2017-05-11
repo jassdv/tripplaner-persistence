@@ -7,14 +7,13 @@ var Restaurant = db.model('restaurant');
 var Activity = db.model('activity');
 var Place = db.model('place');
 var Day = db.model('day');
-var RestDay = db.model('RestDay');
 
 //this is where we get when the rout is: /api/days
 
 router.get('/', function(req, res, next) {
 	Day.findAll({include: [{all: true, nested: true}]}).then(function(data){
 		res.send(data);
-	}).catch(next);	
+	}).catch(next);
 })
 
 
@@ -50,27 +49,47 @@ router.delete('/:num', function(req,res,next){
 
 
 router.put('/:num',function(req,res,next){
-
-	console.log(req.body);
 	var selectedDay = Day.findOne({
 		where: {
 			number: req.params.num
 		}
 	})
 
-	var selectedHotel = Hotel.findOne({
-		where: {
-			name: 'Andaz Wall Street'
-		}
-	})
 
-	Promise.all([selectedHotel, selectedDay])
-	.spread(function(selectedHotel, selectedDay){
-		return selectedDay.update({
-			hotelId: selectedHotel.id
+	if(Object.keys(req.body)[0] === 'restaurants') {
+		var foundRest = Restaurant.findOne({
+			where: {
+				name: req.body[Object.keys(req.body)[0]]
+			}
 		})
-	})
-	.catch();
+		Promise.all([selectedDay, foundRest])
+		.spread(function(selectedDay, foundRest) {
+			selectedDay.addRestaurant(foundRest, {through: 'RestDay'})
+		})
+		.catch(next)
+	} else if(Object.keys(req.body)[0] === 'activities') {
+			var foundAct = Activity.findOne({
+			where: {
+				name: req.body[Object.keys(req.body)[0]]
+			}
+		})
+		Promise.all([selectedDay, foundAct])
+		.spread(function(selectedDay, foundAct) {
+			selectedDay.addActivity(foundAct, {through: 'ActDay'})
+		})
+		.catch(next)
+	} else if(Object.keys(req.body)[0] === 'hotels') {
+		var foundHotel = Hotel.findOne({
+					where: {
+						name: req.body[Object.keys(req.body)[0]]
+					}
+				})
+				Promise.all([selectedDay, foundHotel])
+				.spread(function(selectedDay, foundHotel) {
+					selectedDay.setHotel(foundHotel)
+				})
+				.catch(next)
+		}
 
 });
 
